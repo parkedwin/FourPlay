@@ -1,0 +1,13 @@
+Connect Four
+FourPlay
+Adversarial
+Zero-sum
+board game
+America's Favorite Pastime
+Alpha-beta pruning
+Two-player game
+expectimax
+minimax
+reinforcement learning
+neural networks
+TD learning
