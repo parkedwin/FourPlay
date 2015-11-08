@@ -5,7 +5,7 @@ import random
 
 class Connect4Simulation():
 
-	def __init__(self, players, x = 5, y = 1, z = 7, conn_num = 4):
+	def __init__(self, players, x = 5, y = 5, z = 7, conn_num = 4):
 		self.board = [[[] for j in range(y)] for i in range(x)]
 		self.players = players
 		self.height = z
@@ -125,8 +125,8 @@ class Connect4Simulation():
 '''
 OUTSIDE THE CLASS
 '''
-def simulate():
-	game = Connect4Simulation(['O', 'X'])
+def simulate2D():
+	game = Connect4Simulation(['O', 'X'], y = 1)
 	turns = 20
 	gameIsOver = False
 	for i in range(turns):
