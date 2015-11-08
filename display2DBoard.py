@@ -2,6 +2,8 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import random
+import copy
 
 
 
@@ -19,6 +21,49 @@ def displayBoardSingleFrame(grid):
 	plt.show()
 
 
-# red = 1, blue = 2
-grid = np.array([[0,2,2,1], [2,2,2,1], [2,2,2,1], [2,1,2,2]])
-displayBoardSingleFrame(grid)
+def rowWin(row):
+	if (0 not in row):
+		tempDict = {}
+		for elem in row:
+			tempDict[elem] = 1
+		if(len(tempDict) == 1):
+			return True
+	return False
+
+def gameOver(grid):
+	numRow, numCol = grid.shape
+	if(np.count_nonzero(grid) == numRow*numCol):
+		return True
+	gridTranspose = grid.T
+	print(grid, gridTranspose)
+	for row in grid:
+		if(rowWin(row)):
+			return True
+	for row in gridTranspose:
+		if(rowWin(row)):
+			return True
+	return False
+
+def randomAvailableIndex(grid):
+	numRow, numCol = grid.shape
+	while(True):
+		i, j = random.choice(range(numRow)), random.choice(range(numCol))
+		if(grid[i][j] == 0):
+			return i, j
+
+
+def simulateGame():
+	grid = np.zeros((4,4))
+	displayBoardSingleFrame(grid)
+	playerTurn = 1
+	while(gameOver(grid) == False):
+		i, j = randomAvailableIndex(grid)
+		grid[i][j] = playerTurn
+		if(playerTurn == 1): 
+			playerTurn = 2
+		else: 
+			playerTurn = 1
+		displayBoardSingleFrame(grid)
+
+
+simulateGame()
