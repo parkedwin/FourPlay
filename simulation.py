@@ -1,7 +1,11 @@
 ### Simple Simulation for Connect Four
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+
 class Connect4Simulation():
 
-	def __init__(self, players, x = 5, y = 5, z = 7, conn_num = 4):
+	def __init__(self, players, x = 5, y = 1, z = 7, conn_num = 4):
 		self.board = [[[] for j in range(y)] for i in range(x)]
 		self.players = players
 		self.height = z
@@ -68,7 +72,7 @@ class Connect4Simulation():
 						allRows.append([self.getBlock(i+num,j+num,k-num) for num in range(0, conn_num)])
 
 						result = self.checkRowWin(allRows)
-						if result:
+						if result is not None:
 							return result
 		return None
 
@@ -77,7 +81,7 @@ class Connect4Simulation():
 		actions = []
 		for i in range(self.rownum):
 			for j in range(self.colnum):
-				if hasSpace(i,j):
+				if self.hasSpace(i,j):
 					actions.append((i, j))
 		return actions
 
@@ -89,6 +93,53 @@ class Connect4Simulation():
 			raise AssertionError("Invalid Player/action")
 		return newState
 
+	# Temporary function for checking if our algorithm works in 2D connect four.
+	def display2DBoard(self):
+		# grid = np.zeros((self.rownum, self.height))
+		# for i in range(len(self.board)):
+		# 	for k in range(len(self.board[i][0])):
+		# 		grid[i][k] = self.board[i][0][k] + 1 # because 0 is empty, 1 is player 1, 2 is player 2
+		grid = np.zeros((self.rownum, self.height))
+		for i in range(len(self.board)):
+			for k in range(len(self.board[i][0])):
+				grid[self.rownum - i - 1][self.height - k - 1] = self.board[i][0][k] + 1
+		print grid.transpose()
+		self.display2DBoardSingleFrame(grid.transpose())
+
+	def display2DBoardSingleFrame(self, grid):
+		dim_x, dim_y = grid.shape
+		column_labels = range(dim_x)
+		row_labels = range(dim_y)
+		fig, ax = plt.subplots()
+		print(plt.cm.Blues)
+		heatmap = ax.pcolor(grid, cmap = 'YlGnBu')
+		print grid.shape
+		ax.set_xticks(np.arange(grid.shape[0] - 1), minor = False)
+		ax.set_yticks(np.arange(grid.shape[1]), minor = False)
+		ax.invert_yaxis()
+		plt.grid()
+		plt.show()
 
 
+
+'''
+OUTSIDE THE CLASS
+'''
+def simulate():
+	game = Connect4Simulation(['O', 'X'])
+	turns = 20
+	gameIsOver = False
+	for i in range(turns):
+		if gameIsOver:
+			break
+		for player in range(2):
+			action = random.choice(game.getLegalActions())
+			game.addBlock(player, action)
+			print action
+			game.display2DBoard()
+			winner = game.returnWinner()
+			if winner is not None:
+				print "Player %s won!" % game.players[winner]
+				gameIsOver = True
+				break
 
