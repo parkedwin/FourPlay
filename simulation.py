@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import agents
 
 class Connect4Simulation():
 
@@ -16,7 +17,7 @@ class Connect4Simulation():
 	def addBlock(self, player, action):
 		x = action[0]
 		y = action[1]
-		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0:
+		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0 and player in players:
 			column = self.board[x][y] # is column set by reference or value?
 			if len(column) < self.height:
 				column.append(player)
@@ -120,8 +121,18 @@ class Connect4Simulation():
 		plt.grid()
 		plt.show()
 
+	def getScore(self):
+		result = self.returnWinner()
+		if(result == self.players[0]):
+			return float('inf')
+		if(result == self.players[1]):
+			return float('-inf')
+		return 0
+	def getNumAgents(self):
+		return len(self.players)
 
-
+	def getPlayer(self,index):
+		return self.players[index]
 '''
 OUTSIDE THE CLASS
 '''
@@ -132,9 +143,11 @@ def simulate2D():
 	for i in range(turns):
 		if gameIsOver:
 			break
-		for player in range(2):
+		for player_index in range(2):
+			
 			action = random.choice(game.getLegalActions())
-			game.addBlock(player, action)
+			player_id = game.getPlayer(player_index)
+			game.addBlock(player_id, action)
 			print action
 			game.display2DBoard()
 			winner = game.returnWinner()
@@ -143,3 +156,26 @@ def simulate2D():
 				gameIsOver = True
 				break
 
+def simulate2DMinimaxAgents():
+	game = Connect4Simulation(['O', 'X'], y = 1)
+	turns = 20
+	gameIsOver = False
+	player_max = agents.AlphaBetaAgent(depth= 3, max_dir = 0) #player 0 on game
+	player_min = agents.AlphaBetaAgent(depth= 3, max_dir = 1) #player 1 on game
+	alphabeta_players = [player_max, player_min]
+	for i in range(turns):
+		if gameIsOver:
+			break
+		for player_index in range(2):
+			player_id = game.getPlayer(player_index)
+			AlphaBetaAgent_player = players[player_index]
+			action = AlphaBetaAgent_player.getAction(game)
+			game.addBlock(player_id, action)
+
+			print action
+			game.display2DBoard()
+			winner = game.returnWinner()
+			if winner is not None:
+				print "Player %s won!" % game.players[winner]
+				gameIsOver = True
+				break
