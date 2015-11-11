@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import agents
+import human
 import copy
 from matplotlib.widgets import Button
 
@@ -15,6 +16,7 @@ class Connect4Simulation():
 		self.rownum = x
 		self.colnum = y
 		self.conn_num = conn_num
+
 
 	def getPlayerIndex(self,player):
 		if player in self.players:
@@ -146,6 +148,14 @@ class Connect4Simulation():
 					actions.append((i, j))
 		return actions
 
+
+	# action defined as (row, col) pair that the human player clicked on
+	def getHumanChosenAction(self, playerIndex):
+		user_input = raw_input("Select X for Player " + str(playerIndex) + " : ")
+		action = self.rownum - 1 - int(user_input)
+		return action
+
+
 	def generateSuccessor(self, player, action):
 		newState = copy.deepcopy(self)
 		if player in newState.players and action in newState.getLegalActions():
@@ -164,7 +174,8 @@ class Connect4Simulation():
 		for i in range(len(self.board)):
 			for k in range(len(self.board[i][0])):
 				grid[self.rownum - i - 1][self.height - k - 1] = self.getBlock(i, 0, k)
-		print grid.transpose()
+		terminalGrid = copy.deepcopy(grid)
+		print terminalGrid.transpose()
 		self.display2DBoardSingleFrame(grid.transpose())
 
 	def exiting(self,blah):
@@ -172,6 +183,7 @@ class Connect4Simulation():
 
 	def closeplt(self,blah):
 		plt.close()
+
 	def display2DBoardSingleFrame(self, grid):
 		dim_x, dim_y = grid.shape
 		column_labels = range(dim_x)
@@ -217,11 +229,61 @@ def simulate2D():
 		if gameIsOver:
 			break
 		for player_index in range(1,3):
-			
 			action = random.choice(game.getLegalActions())
 			player_id = game.getPlayerID(player_index)
 			game.addBlock(player_id, action)
 			print action
+			game.display2DBoard()
+			winner = game.returnWinner()
+			if winner is not None:
+				print "Player %s won!" % winner
+				gameIsOver = True
+				break
+
+def simulate2DHumanVsHuman():
+	game = Connect4Simulation(['O', 'X'], y = 1)
+	turns = 20
+	gameIsOver = False
+	player_human1 = human.Human(game.rownum, game.colnum)
+	player_human2 = human.Human(game.rownum, game.colnum)
+	players = ['None', player_human1, player_human2]
+	for i in range(turns):
+		if gameIsOver:
+			break
+		for player_index in range(1,3):
+			player_id = game.getPlayerID(player_index)
+			human_player = players[player_index]
+			action = (human_player.getHumanChosenAction(game.players[player_index -1]), 0)
+			game.addBlock(player_id, action)
+			game.display2DBoard()
+			winner = game.returnWinner()
+			if winner is not None:
+				print "Player %s won!" % winner
+				gameIsOver = True
+				break 
+
+def simulate2DMinimaxVsHuman():
+	game = Connect4Simulation(['O', 'X'], y = 1)
+	turns = 20
+	gameIsOver = False
+	player_human = human.Human(game.rownum, game.colnum)
+	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
+	players = ['None', player_human, player_min]
+	for i in range(turns):
+		if gameIsOver:
+			break
+		for player_index in range(1,3):
+			player_id = game.getPlayerID(player_index)
+			if(player_index == 1):
+				human_player = players[player_index]
+				action = (human_player.getHumanChosenAction(game.players[player_index - 1]), 0)
+				game.addBlock(player_id, action)
+			elif(player_index == 2):
+				AlphaBetaAgent_player = players[player_index]
+				action = AlphaBetaAgent_player.getAction(game)
+				game.addBlock(player_id, action)
+			print "player ",player_id, "places at", action
+			print "Evaluation :",agents.betterEvaluationFunction(game)
 			game.display2DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
@@ -235,12 +297,12 @@ def simulate2DMinimaxAgents():
 	gameIsOver = False
 	player_max = agents.AlphaBetaAgent(depth= 2, max_dir = 0, evalFn= agents.betterEvaluationFunction) #player 0 on game
 	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
-	alphabeta_players = [player_max, player_min]
+	alphabeta_players = ['None',player_max, player_min]
 	for i in range(turns):
 		if gameIsOver:
 			break
-		for player_index in range(0,2):
-			player_id = game.getPlayer(player_index)
+		for player_index in range(1,3):
+			player_id = game.getPlayerID(player_index)
 			AlphaBetaAgent_player = alphabeta_players[player_index]
 			action = AlphaBetaAgent_player.getAction(game)
 			game.addBlock(player_id, action)
@@ -252,4 +314,10 @@ def simulate2DMinimaxAgents():
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break
-simulate2DMinimaxAgents()
+
+
+simulate2DMinimaxVsHuman()
+# simulate2DHumanVsHuman()
+# simulate2DMinimaxAgents()
+
+
