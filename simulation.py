@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import agents
+import copy
 
 class Connect4Simulation():
 
@@ -17,7 +18,7 @@ class Connect4Simulation():
 	def addBlock(self, player, action):
 		x = action[0]
 		y = action[1]
-		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0 and player in players:
+		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0 and player in self.players:
 			column = self.board[x][y] # is column set by reference or value?
 			if len(column) < self.height:
 				column.append(player)
@@ -35,6 +36,12 @@ class Connect4Simulation():
 		  if k < len(self.board[i][j]) and k >= 0:
 			return self.board[i][j][k]
 		return None
+
+	def getBlock_PlayerIndex(self, i,j, k):
+		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
+		  if k < len(self.board[i][j]) and k >= 0:
+			return self.players.index(self.board[i][j][k]) + 1
+		return 0
 
 	def checkRowWin(self,allRows):
 		for row in allRows:
@@ -103,7 +110,8 @@ class Connect4Simulation():
 		grid = np.zeros((self.rownum, self.height))
 		for i in range(len(self.board)):
 			for k in range(len(self.board[i][0])):
-				grid[self.rownum - i - 1][self.height - k - 1] = self.board[i][0][k] + 1
+				#please define it as the player seen in the board
+				grid[self.rownum - i - 1][self.height - k - 1] = self.getBlock_PlayerIndex(i, 0, k)
 		print grid.transpose()
 		self.display2DBoardSingleFrame(grid.transpose())
 
@@ -152,7 +160,7 @@ def simulate2D():
 			game.display2DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
-				print "Player %s won!" % game.players[winner]
+				print "Player %s won!" % winner
 				gameIsOver = True
 				break
 
@@ -168,7 +176,7 @@ def simulate2DMinimaxAgents():
 			break
 		for player_index in range(2):
 			player_id = game.getPlayer(player_index)
-			AlphaBetaAgent_player = players[player_index]
+			AlphaBetaAgent_player = alphabeta_players[player_index]
 			action = AlphaBetaAgent_player.getAction(game)
 			game.addBlock(player_id, action)
 
@@ -176,6 +184,6 @@ def simulate2DMinimaxAgents():
 			game.display2DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
-				print "Player %s won!" % game.players[winner]
+				print "Player %s won!" % winner
 				gameIsOver = True
 				break

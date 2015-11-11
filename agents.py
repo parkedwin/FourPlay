@@ -46,7 +46,7 @@ def scoreEvaluationFunction(currentGameState):
 class AgentSearchAgent(Agent):
 
   def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2', max_dir=0):
-    self.evaluationFunction = util.lookup(evalFn, globals())
+    self.evaluationFunction = scoreEvaluationFunction
     self.depth = int(depth)
     self.index = max_dir 
     #max_dir = 0 means try to maximize score, max_dir otherwise means agent
