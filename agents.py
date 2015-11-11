@@ -226,15 +226,6 @@ class ExpectimaxAgent(AgentSearchAgent):
     return result[0]
 
 def betterEvaluationFunction(currentGameState):
-  """
-    Your extreme, unstoppable evaluation function (problem 4).
-
-    DESCRIPTION: This function uses manhattan distance as the main measure of length.
-    The evaluation function gives a higher score as pacman gets closer to a food, capsule, or scared ghosts.
-    The evaluation function gives a higher score as pacman gets further away from a normal ghost but only
-    up until 3 steps away, where it is considered as a safe distance from a ghost. The evaluation function
-    gives a lower score with more capsules, food particles, and scared ghosts.
-  """
   score = currentGameState.getScore()
   patterns = [[1,1,0,0],[1,1,1,0],[1,1,1,1],[2,2,0,0],[2,2,2,0],[2,2,2,2]]
   count = currentGameState.getAllCounts(patterns,4)

@@ -4,6 +4,7 @@ import numpy as np
 import random
 import agents
 import copy
+from matplotlib.widgets import Button
 
 class Connect4Simulation():
 
@@ -19,7 +20,7 @@ class Connect4Simulation():
 		if player in self.players:
 			return self.players.index(player) + 1
 		raise AssertionError("Invalid player")
-
+	#indexed starting at 1
 	def getPlayerID(self,index):
 		if index <= len(self.players) and index > 0:
 			return self.players[index - 1]
@@ -46,7 +47,7 @@ class Connect4Simulation():
 		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
 		  if k < len(self.board[i][j]) and k >= 0:
 			return self.board[i][j][k]
-		  if k >= 0:
+		  if k >= 0 and k < self.height:
 		  	return 0
 		return -1
 
@@ -54,7 +55,7 @@ class Connect4Simulation():
 		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
 		  if k < len(self.board[i][j]) and k >= 0:
 			return self.getPlayerID(self.board[i][j][k])
-		  if k >= 0:
+		  if k >= 0 and k < self.height:
 		    return "open"
 		return "Not Valid position"
 
@@ -166,6 +167,11 @@ class Connect4Simulation():
 		print grid.transpose()
 		self.display2DBoardSingleFrame(grid.transpose())
 
+	def exiting(self,blah):
+		exit()
+
+	def closeplt(self,blah):
+		plt.close()
 	def display2DBoardSingleFrame(self, grid):
 		dim_x, dim_y = grid.shape
 		column_labels = range(dim_x)
@@ -178,6 +184,12 @@ class Connect4Simulation():
 		ax.set_yticks(np.arange(grid.shape[1]), minor = False)
 		ax.invert_yaxis()
 		plt.grid()
+		axstop = plt.axes([0.9, 0.0, 0.1, 0.075])
+		axnext = plt.axes([0.1, 0.0, 0.1, 0.075])
+		button_stop = Button(axstop, 'Stop')
+		button_next = Button(axnext, 'Next')
+		button_stop.on_clicked(self.exiting)
+		button_next.on_clicked(self.closeplt)
 		plt.show()
 
 	def getScore(self):
@@ -191,6 +203,7 @@ class Connect4Simulation():
 	def getNumAgents(self):
 		return len(self.players)
 
+	#indexed starting at 0
 	def getPlayer(self,index):
 		return self.players[index]
 '''
@@ -221,7 +234,7 @@ def simulate2DMinimaxAgents():
 	turns = 20
 	gameIsOver = False
 	player_max = agents.AlphaBetaAgent(depth= 2, max_dir = 0, evalFn= agents.betterEvaluationFunction) #player 0 on game
-	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1) #player 1 on game
+	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
 	alphabeta_players = [player_max, player_min]
 	for i in range(turns):
 		if gameIsOver:
@@ -232,6 +245,7 @@ def simulate2DMinimaxAgents():
 			action = AlphaBetaAgent_player.getAction(game)
 			game.addBlock(player_id, action)
 			print "player ",player_id, "places at", action
+			print "Evaluation :",agents.betterEvaluationFunction(game)
 			game.display2DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
