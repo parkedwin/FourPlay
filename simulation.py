@@ -15,13 +15,23 @@ class Connect4Simulation():
 		self.colnum = y
 		self.conn_num = conn_num
 
+	def getPlayerIndex(self,player):
+		if player in self.players:
+			return self.players.index(player) + 1
+		raise AssertionError("Invalid player")
+
+	def getPlayerID(self,index):
+		if index <= len(self.players) and index > 0:
+			return self.players[index - 1]
+		raise AssertionError("invalid index")
+
 	def addBlock(self, player, action):
 		x = action[0]
 		y = action[1]
-		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0 and player in self.players:
-			column = self.board[x][y] # is column set by reference or value?
+		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0:
+			column = self.board[x][y]
 			if len(column) < self.height:
-				column.append(player)
+				column.append(self.getPlayerIndex(player))
 				return
 		raise AssertionError("Cannot add to this column")
 
@@ -31,23 +41,65 @@ class Connect4Simulation():
 		  	return True
 		return False
 
+	# -1 means place is no good. 0 means it is open. 1,2 mean player in tile
 	def getBlock(self, i, j, k):
 		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
 		  if k < len(self.board[i][j]) and k >= 0:
 			return self.board[i][j][k]
-		return None
+		  if k >= 0:
+		  	return 0
+		return -1
 
-	def getBlock_PlayerIndex(self, i,j, k):
+	def getBlock_PlayerID(self, i,j, k):
 		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
 		  if k < len(self.board[i][j]) and k >= 0:
-			return self.players.index(self.board[i][j][k]) + 1
-		return 0
+			return self.getPlayerID(self.board[i][j][k])
+		  if k >= 0:
+		    return "open"
+		return "Not Valid position"
 
 	def checkRowWin(self,allRows):
 		for row in allRows:
-			if row.count(row[0]) == len(row):
+			if row.count(row[0]) == len(row) and row[0] > 0:
 				return row[0]
 		return None
+
+	def rowsPatterns(self,allRows, patterns,counts):
+		for row in allRows:
+			if(row in patterns):
+				pattern_index = patterns.index(row)
+				counts[pattern_index] += 1
+
+	def getAllCounts(self, patterns, patternsize):
+		counts = [0] * len(patterns)
+		for k in range(self.height):
+			for i in range(self.rownum):
+				for j in range(self.colnum):
+					player = self.getBlock(i, j, k)
+					if player > 0:
+						allRows = []
+						#go down column to check for win
+						allRows.append([self.getBlock(i+num,j,k) for num in range(0, patternsize)])
+						#go down row to check for win
+						allRows.append([self.getBlock(i,j+num,k) for num in  range(0, patternsize)])
+						#go down z_col to check for win
+						allRows.append([self.getBlock(i,j,k+num) for num in range(0, patternsize)])
+						#go down diagonals
+						allRows.append([self.getBlock(i+num,j+num,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num,j,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j+num,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num,j+num,k+num) for num in range(0, patternsize)])
+
+						#other diagonals T_T
+						allRows.append([self.getBlock(i+num,j-num,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num,j,k-num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j+num,k-num) for num in range(0, patternsize)])
+
+						allRows.append([self.getBlock(i-num,j+num,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num,j-num,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num,j+num,k-num) for num in range(0, patternsize)])
+						self.rowsPatterns(allRows,patterns,counts)
+		return counts
 
 	#Think about better time complexity ...
 	def returnWinner(self):
@@ -56,7 +108,7 @@ class Connect4Simulation():
 			for i in range(self.rownum):
 				for j in range(self.colnum):
 					player = self.getBlock(i, j, k)
-					if player is not None:
+					if player > 0:
 						allRows = []
 						#go down column to check for win
 						allRows.append([self.getBlock(i+num,j,k) for num in range(0, conn_num)])
@@ -81,7 +133,7 @@ class Connect4Simulation():
 
 						result = self.checkRowWin(allRows)
 						if result is not None:
-							return result
+							return self.getPlayerID(result)
 		return None
 
 	# action defined as (row, col) pair to add to a column
@@ -110,8 +162,7 @@ class Connect4Simulation():
 		grid = np.zeros((self.rownum, self.height))
 		for i in range(len(self.board)):
 			for k in range(len(self.board[i][0])):
-				#please define it as the player seen in the board
-				grid[self.rownum - i - 1][self.height - k - 1] = self.getBlock_PlayerIndex(i, 0, k)
+				grid[self.rownum - i - 1][self.height - k - 1] = self.getBlock(i, 0, k)
 		print grid.transpose()
 		self.display2DBoardSingleFrame(grid.transpose())
 
@@ -120,9 +171,9 @@ class Connect4Simulation():
 		column_labels = range(dim_x)
 		row_labels = range(dim_y)
 		fig, ax = plt.subplots()
-		print(plt.cm.Blues)
+		#print(plt.cm.Blues)
 		heatmap = ax.pcolor(grid, cmap = 'YlGnBu')
-		print grid.shape
+		#print grid.shape
 		ax.set_xticks(np.arange(grid.shape[0] - 1), minor = False)
 		ax.set_yticks(np.arange(grid.shape[1]), minor = False)
 		ax.invert_yaxis()
@@ -136,6 +187,7 @@ class Connect4Simulation():
 		if(result == self.players[1]):
 			return float('-inf')
 		return 0
+
 	def getNumAgents(self):
 		return len(self.players)
 
@@ -151,10 +203,10 @@ def simulate2D():
 	for i in range(turns):
 		if gameIsOver:
 			break
-		for player_index in range(2):
+		for player_index in range(1,3):
 			
 			action = random.choice(game.getLegalActions())
-			player_id = game.getPlayer(player_index)
+			player_id = game.getPlayerID(player_index)
 			game.addBlock(player_id, action)
 			print action
 			game.display2DBoard()
@@ -168,22 +220,22 @@ def simulate2DMinimaxAgents():
 	game = Connect4Simulation(['O', 'X'], y = 1)
 	turns = 20
 	gameIsOver = False
-	player_max = agents.AlphaBetaAgent(depth= 3, max_dir = 0) #player 0 on game
-	player_min = agents.AlphaBetaAgent(depth= 3, max_dir = 1) #player 1 on game
+	player_max = agents.AlphaBetaAgent(depth= 2, max_dir = 0, evalFn= agents.betterEvaluationFunction) #player 0 on game
+	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1) #player 1 on game
 	alphabeta_players = [player_max, player_min]
 	for i in range(turns):
 		if gameIsOver:
 			break
-		for player_index in range(2):
+		for player_index in range(0,2):
 			player_id = game.getPlayer(player_index)
 			AlphaBetaAgent_player = alphabeta_players[player_index]
 			action = AlphaBetaAgent_player.getAction(game)
 			game.addBlock(player_id, action)
-
-			print action
+			print "player ",player_id, "places at", action
 			game.display2DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break
+simulate2DMinimaxAgents()

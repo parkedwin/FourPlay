@@ -45,8 +45,8 @@ def scoreEvaluationFunction(currentGameState):
 
 class AgentSearchAgent(Agent):
 
-  def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2', max_dir=0):
-    self.evaluationFunction = scoreEvaluationFunction
+  def __init__(self, evalFn = scoreEvaluationFunction, depth = '2', max_dir=0):
+    self.evaluationFunction = evalFn
     self.depth = int(depth)
     self.index = max_dir 
     #max_dir = 0 means try to maximize score, max_dir otherwise means agent
@@ -225,11 +225,6 @@ class ExpectimaxAgent(AgentSearchAgent):
     result = recurse(gameState, self.depth, self.index)
     return result[0]
 
-    # END_YOUR_CODE
-
-######################################################################################
-# Problem 4a (extra credit): creating a better evaluation function
-
 def betterEvaluationFunction(currentGameState):
   """
     Your extreme, unstoppable evaluation function (problem 4).
@@ -240,7 +235,17 @@ def betterEvaluationFunction(currentGameState):
     up until 3 steps away, where it is considered as a safe distance from a ghost. The evaluation function
     gives a lower score with more capsules, food particles, and scared ghosts.
   """
-  score = 0
+  score = currentGameState.getScore()
+  patterns = [[1,1,0,0],[1,1,1,0],[1,1,1,1],[2,2,0,0],[2,2,2,0],[2,2,2,2]]
+  count = currentGameState.getAllCounts(patterns,4)
+  #remember player 1 maximizes, player 2 minimizes
+  score += 2*count[0]
+  score += 5*count[1]
+  score += 10*count[2]
+
+  score -= 2*count[3]
+  score -= 5*count[4]
+  score -= 10*count[5]
   return score
 better = betterEvaluationFunction
 
