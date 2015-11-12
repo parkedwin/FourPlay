@@ -1,11 +1,14 @@
 ### Simple Simulation for Connect Four
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from itertools import product, combinations
 import numpy as np
 import random
 import agents
 import human
 import copy
 from matplotlib.widgets import Button
+
 
 class Connect4Simulation():
 
@@ -149,13 +152,6 @@ class Connect4Simulation():
 		return actions
 
 
-	# action defined as (row, col) pair that the human player clicked on
-	def getHumanChosenAction(self, playerIndex):
-		user_input = raw_input("Select X for Player " + str(playerIndex) + " : ")
-		action = self.rownum - 1 - int(user_input)
-		return action
-
-
 	def generateSuccessor(self, player, action):
 		newState = copy.deepcopy(self)
 		if player in newState.players and action in newState.getLegalActions():
@@ -177,6 +173,16 @@ class Connect4Simulation():
 		terminalGrid = copy.deepcopy(grid)
 		print terminalGrid.transpose()
 		self.display2DBoardSingleFrame(grid.transpose())
+
+
+	# AM 11/11/15 Added function for display3DBoard
+	def display3DBoard(self):
+		grid = np.zeros((self.rownum, self.colnum, self.height))
+		for i in range(len(self.board)):
+			for j in range(len(self.board[i])):
+				for k in range(len(self.board[i][j])):
+					grid[i][j][k] = self.getBlock(i, j, k)
+		self.display3DBoardSingleFrame(grid)
 
 	def exiting(self,blah):
 		exit()
@@ -204,6 +210,59 @@ class Connect4Simulation():
 		button_next.on_clicked(self.closeplt)
 		plt.show()
 
+		#AM Added 11/11/15 
+	def display3DBoardSingleFrame(self, grid):
+		def drawGamePrism(ax):
+			cube_corner = [[0, 0, 0], [self.rownum, 0, 0], [self.rownum, self.colnum, 0], [0, self.colnum, 0],
+			[0, 0, self.height], [self.rownum, 0, self.height], [self.rownum, self.colnum, self.height], [0, self.colnum, self.height]]
+			ax.plot3D(*zip(cube_corner[0], cube_corner[1]), color = "m")
+			ax.plot3D(*zip(cube_corner[1], cube_corner[5]), color = "m")
+			ax.plot3D(*zip(cube_corner[5], cube_corner[4]), color = "m")
+			ax.plot3D(*zip(cube_corner[4], cube_corner[0]), color = "m")
+			ax.plot3D(*zip(cube_corner[3], cube_corner[2]), color = "m")
+			ax.plot3D(*zip(cube_corner[2], cube_corner[6]), color = "m")
+			ax.plot3D(*zip(cube_corner[6], cube_corner[7]), color = "m")
+			ax.plot3D(*zip(cube_corner[7], cube_corner[3]), color = "m")
+			ax.plot3D(*zip(cube_corner[0], cube_corner[3]), color = "m")
+			ax.plot3D(*zip(cube_corner[1], cube_corner[2]), color = "m")
+			ax.plot3D(*zip(cube_corner[5], cube_corner[6]), color = "m")
+			ax.plot3D(*zip(cube_corner[4], cube_corner[7]), color = "m")
+
+		def drawThreadPoles(ax):
+			for x in range(self.rownum):
+				for y in range(self.colnum):
+					minz, maxz = 0, self.height
+					ax.plot3D(*zip([x,y,minz], [x,y,maxz]), color = "g")
+
+		fig = plt.figure()
+		ax = fig.add_subplot(111, projection = '3d')
+		ax.set_xticks(np.arange(grid.shape[0]), minor = False)
+		ax.set_yticks(np.arange(grid.shape[1]), minor = False)
+		ax.set_zticks(np.arange(grid.shape[2]), minor = False)
+		drawGamePrism(ax)
+		drawThreadPoles(ax)
+		
+		for x in range(len(grid)):
+			for y in range(len(grid[0])):
+				for z in range(len(grid[0][0])):
+					if(grid[x][y][z] == 0):
+						continue
+					elif(grid[x][y][z] == 1):
+						color = 'b'
+					elif(grid[x][y][z] == 2):
+						color = 'r'
+					ax.scatter([x], [y], [z], c = color, s = 80)
+		ax.set_xlabel('X Label')
+		ax.set_ylabel('Y Label')
+		ax.set_zlabel('Z Label')
+		axstop = plt.axes([0.9, 0.0, 0.1, 0.075])
+		axnext = plt.axes([0.1, 0.0, 0.1, 0.075])
+		button_stop = Button(axstop, 'Stop')
+		button_next = Button(axnext, 'Next')
+		button_stop.on_clicked(self.exiting)
+		button_next.on_clicked(self.closeplt)
+		plt.show()
+
 	def getScore(self):
 		result = self.returnWinner()
 		if(result == self.players[0]):
@@ -221,9 +280,15 @@ class Connect4Simulation():
 '''
 OUTSIDE THE CLASS
 '''
-def simulate2D():
-	game = Connect4Simulation(['O', 'X'], y = 1)
-	turns = 20
+
+def simulateRandom(dimension):
+	game, turns = None, 0
+	if(dimension == 2):
+		game = Connect4Simulation(['O', 'X'], y = 1)
+		turns = 20
+	elif(dimension == 3):
+		game = Connect4Simulation(['O', 'X'])
+		turns = 90
 	gameIsOver = False
 	for i in range(turns):
 		if gameIsOver:
@@ -233,16 +298,25 @@ def simulate2D():
 			player_id = game.getPlayerID(player_index)
 			game.addBlock(player_id, action)
 			print action
-			game.display2DBoard()
+			if(dimension == 2):
+				game.display2DBoard()
+			elif(dimension == 3):
+				game.display3DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break
 
-def simulate2DHumanVsHuman():
-	game = Connect4Simulation(['O', 'X'], y = 1)
-	turns = 20
+
+def simulateHumanVsHuman(dimension):
+	game, turns = None, 0
+	if(dimension == 2):
+		game = Connect4Simulation(['O', 'X'], y = 1)
+		turns = 20
+	elif(dimension == 3):
+		game = Connect4Simulation(['O', 'X'])
+		turns = 90
 	gameIsOver = False
 	player_human1 = human.Human(game.rownum, game.colnum)
 	player_human2 = human.Human(game.rownum, game.colnum)
@@ -253,18 +327,30 @@ def simulate2DHumanVsHuman():
 		for player_index in range(1,3):
 			player_id = game.getPlayerID(player_index)
 			human_player = players[player_index]
-			action = (human_player.getHumanChosenAction(game.players[player_index -1]), 0)
-			game.addBlock(player_id, action)
-			game.display2DBoard()
+			action = None
+			if(dimension == 2):
+				action = (human_player.get2DAction(game.players[player_index -1]), 0)
+				game.addBlock(player_id, action)
+				game.display2DBoard()
+			elif(dimension == 3):
+				action = human_player.get3DAction(game.players[player_index -1])
+				game.addBlock(player_id, action)
+				game.display3DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break 
 
-def simulate2DMinimaxVsHuman():
-	game = Connect4Simulation(['O', 'X'], y = 1)
-	turns = 20
+
+def simulateMinimaxVsHuman(dimension):
+	game, turns = None, 0
+	if(dimension == 2):
+		game = Connect4Simulation(['O', 'X'], y = 1)
+		turns = 20
+	elif(dimension == 3):
+		game = Connect4Simulation(['O', 'X'])
+		turns = 90
 	gameIsOver = False
 	player_human = human.Human(game.rownum, game.colnum)
 	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
@@ -276,7 +362,11 @@ def simulate2DMinimaxVsHuman():
 			player_id = game.getPlayerID(player_index)
 			if(player_index == 1):
 				human_player = players[player_index]
-				action = (human_player.getHumanChosenAction(game.players[player_index - 1]), 0)
+				action = None
+				if(dimension == 2):
+					action = (human_player.get2DAction(game.players[player_index - 1]), 0)
+				elif(dimension == 3):
+					action = human_player.get3DAction(game.players[player_index - 1])
 				game.addBlock(player_id, action)
 			elif(player_index == 2):
 				AlphaBetaAgent_player = players[player_index]
@@ -284,40 +374,59 @@ def simulate2DMinimaxVsHuman():
 				game.addBlock(player_id, action)
 			print "player ",player_id, "places at", action
 			print "Evaluation :",agents.betterEvaluationFunction(game)
-			game.display2DBoard()
+			if(dimension == 2):
+				game.display2DBoard()
+			elif(dimension == 3):
+				game.display3DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break
 
-def simulate2DMinimaxAgents():
-	game = Connect4Simulation(['O', 'X'], y = 1)
-	turns = 20
+def simulateMinimaxAgents(dimension):
+	game, turns = None, 0
+	if(dimension == 2):
+		game = Connect4Simulation(['O', 'X'], y = 1)
+		turns = 20
+	elif(dimension == 3):
+		game = Connect4Simulation(['O', 'X'])
+		turns = 90
 	gameIsOver = False
 	player_max = agents.AlphaBetaAgent(depth= 2, max_dir = 0, evalFn= agents.betterEvaluationFunction) #player 0 on game
 	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
-	alphabeta_players = ['None',player_max, player_min]
+	alphabeta_players = ['None', player_max, player_min]
 	for i in range(turns):
 		if gameIsOver:
 			break
 		for player_index in range(1,3):
 			player_id = game.getPlayerID(player_index)
 			AlphaBetaAgent_player = alphabeta_players[player_index]
+			print("here")
 			action = AlphaBetaAgent_player.getAction(game)
 			game.addBlock(player_id, action)
 			print "player ",player_id, "places at", action
 			print "Evaluation :",agents.betterEvaluationFunction(game)
-			game.display2DBoard()
+			if(dimension == 2):
+				game.display2DBoard()
+			elif(dimension == 3):
+				game.display3DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				gameIsOver = True
 				break
 
+# simulateRandom(3)
+# simulateHumanVsHuman(3)
+simulateMinimaxVsHuman(3)
+# simulateMinimaxAgents(2)
 
-simulate2DMinimaxVsHuman()
-# simulate2DHumanVsHuman()
-# simulate2DMinimaxAgents()
+# simulateRandom(2)
+# simulateHumanVsHuman(2)
+# simulateMinimaxVsHuman(3)
+# simulateMinimaxAgents(2)
+
+# simulateMinimaxAgents(2)
 
 

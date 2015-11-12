@@ -20,7 +20,6 @@ class ReflexAgent(Agent):
 
 
   def getAction(self, gameState):
-
     # Collect legal moves and successor states
     legalMoves = gameState.getLegalActions()
 
