@@ -14,7 +14,7 @@ import copy
 from matplotlib.widgets import Button
 
 
-class Connect4Simulation():
+class Connect4Game():
 
 	def __init__(self, players, dimension = 3, x = 4, y = 4, z = 4, conn_num = 4, display = True):
 		self.dimension = dimension
@@ -329,14 +329,14 @@ if __name__ == "__main__":
 	player1 = "O"
 	player2 = "X"
 	players = [player1,player2]
-	game = Connect4Simulation(players, dimension=3, x=4, y=4, z = 4, display=True)
+	game = Connect4Game(players, dimension=3, x=4, y=4, z = 4, display=False)
 
 	human1 = Human(player1)
 	human2 = Human(player2)
 	random1 = RandomAgent(player1)
 	random2 = RandomAgent(player2)
-	reflex1 = ReflexAgent(player1)
-	reflex2 = ReflexAgent(player2)
+	reflex1 = ReflexAgent(player1, player2)
+	reflex2 = ReflexAgent(player2, player1)
 
 	alpha1 = AlphaBetaAgent(player1,player2, depth = 1, \
 							maximize = 1, \
@@ -347,6 +347,7 @@ if __name__ == "__main__":
 							evalFn = agents.betterEvaluationFunction)
 	agent_list = [random1, random2]
 	#agent_list = [human1, alpha2]
+	agent_list = [reflex1, alpha2]
 	allMoves = simulate(game, agent_list)
 	print("Number of Total Moves: " + str(len(allMoves)))
 	print("Final Evaluation: " + str(abs(allMoves[-1][3])))

@@ -13,10 +13,11 @@ class ReflexAgent(Agent):
     A reflex agent chooses an action at each choice point by examining
     its alternatives via a state evaluation function.
   """
-  def __init__(self, name ,maximize = True):
+  def __init__(self, name, opp_name, maximize = True):
     self.dc = None
     self.max = maximize
     self.id = name
+    self.opp = opp_name
 
 
   def getAction(self, gameState):
@@ -25,6 +26,7 @@ class ReflexAgent(Agent):
 
     # Choose one of the best actions
     scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
+    # print scores
     if(self.max):
       bestScore = max(scores)
     else:
@@ -35,8 +37,15 @@ class ReflexAgent(Agent):
     return legalMoves[chosenIndex]
 
   def evaluationFunction(self, currentGameState, action):
-    successorGameState = gameState.generateSuccessor(agentIndex, action)
-    return successorGameState.getScore()
+    successorGameState = currentGameState.generateSuccessor(self.id, action)
+    scores = []
+    for action in successorGameState.getLegalActions():
+      successorGameState2 = successorGameState.generateSuccessor(self.opp, action)
+      scores.append(successorGameState2.getScore())
+    if(self.max):
+      return min(scores)
+    else:
+      return max(scores)
 
 def scoreEvaluationFunction(currentGameState):
   return currentGameState.getScore()
