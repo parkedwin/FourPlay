@@ -9,6 +9,7 @@ from human import Human
 from random_agent import RandomAgent
 from agents import AlphaBetaAgent
 from agents import ReflexAgent
+import agents
 import copy
 from matplotlib.widgets import Button
 
@@ -47,7 +48,7 @@ class Connect4Simulation():
 			if len(column) < self.height:
 				column.append(self.getPlayerIndex(player))
 				return
-		raise AssertionError("Cannot add to this column")
+		raise AssertionError("Cannot add to this column "+ str(action) + " with " + str(player))
 
 	def hasSpace(self, x, y):
 		if y < self.colnum and x < self.rownum and x >= 0 and y >= 0:
@@ -71,9 +72,11 @@ class Connect4Simulation():
 		return None
 
 	def rowsPatterns(self,allRows, patterns,counts):
-		for row in allRows:
+		for num,row in enumerate(allRows):
 			if(row in patterns):
+				#print "row", num
 				pattern_index = patterns.index(row)
+				#print "pattern", row
 				counts[pattern_index] += 1
 
 	def getAllCounts(self, patterns, patternsize, offset):
@@ -83,6 +86,8 @@ class Connect4Simulation():
 				for j in range(self.colnum):
 					player = self.getBlock(i, j, k)
 					if player > 0:
+						#print "\n player", player
+						#print "block", i,j,k
 						allRows = []
 						#go down column to check for win
 						allRows.append([self.getBlock(i+num-offset,j,k) for num in range(0, patternsize)])
@@ -294,9 +299,9 @@ class Connect4Simulation():
 OUTSIDE THE CLASS
 '''
 
-def simulate(game, agents):
+def simulate(game, agent_list):
 	while not game.isOver:
-		for agent in agents:
+		for agent in agent_list:
 			if not game.getLegalActions():
 				print "DRAW"
 				game.displayBoard()
@@ -305,6 +310,7 @@ def simulate(game, agents):
 			action = agent.getAction(game)
 			print ("Action: ", action)
 			game.addBlock(agent.id, action)
+			print "Eval", agents.betterEvaluationFunction(game)
 			if game.display:
 				game.displayBoard()
 			winner = game.returnWinner()
@@ -314,26 +320,27 @@ def simulate(game, agents):
 				game.displayBoard()
 				return
 
-player1 = "O"
-player2 = "X"
-players = [player1,player2]
-game = Connect4Simulation(players, dimension=3, display=True)
+if __name__ == "__main__":
+	player1 = "O"
+	player2 = "X"
+	players = [player1,player2]
+	game = Connect4Simulation(players, dimension=3, display=True)
 
-human1 = Human(player1)
-human2 = Human(player2)
-random1 = RandomAgent(player1)
-random2 = RandomAgent(player2)
-reflex1 = ReflexAgent(player1)
-reflex2 = ReflexAgent(player2)
+	human1 = Human(player1)
+	human2 = Human(player2)
+	random1 = RandomAgent(player1)
+	random2 = RandomAgent(player2)
+	reflex1 = ReflexAgent(player1)
+	reflex2 = ReflexAgent(player2)
 
-alpha1 = AlphaBetaAgent(player1,player2, depth = 1, \
-						maximize = 1, \
-						evalFn = agents.betterEvaluationFunction)
+	alpha1 = AlphaBetaAgent(player1,player2, depth = 1, \
+							maximize = 1, \
+							evalFn = agents.betterEvaluationFunction)
 
-alpha2 = AlphaBetaAgent(player2, player1, depth = 1, \
-						maximize = -1, \
-						evalFn = agents.betterEvaluationFunction)
-agents = [human1, alpha2]
-simulate(game, agents)
+	alpha2 = AlphaBetaAgent(player2, player1, depth = 1, \
+							maximize = -1, \
+							evalFn = agents.betterEvaluationFunction)
+	agent_list = [human1, alpha2]
+	simulate(game, agent_list)
 
 
