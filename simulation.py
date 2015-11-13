@@ -5,21 +5,26 @@ from itertools import product, combinations
 import numpy as np
 import random
 import agents
-import human
+from human import Human
+from random_agent import RandomAgent
+from agents import AlphaBetaAgent
 import copy
 from matplotlib.widgets import Button
 
 
 class Connect4Simulation():
 
-	def __init__(self, players, x = 5, y = 5, z = 7, conn_num = 4):
+	def __init__(self, players, dimension = 3, x = 4, y = 4, z = 4, conn_num = 4, display = True):
+		self.dimension = dimension
+		if self.dimension == 2: y = 1
 		self.board = [[[] for j in range(y)] for i in range(x)]
 		self.players = players
 		self.height = z
 		self.rownum = x
 		self.colnum = y
 		self.conn_num = conn_num
-
+		self.isOver = False
+		self.display = display
 
 	def getPlayerIndex(self,player):
 		if player in self.players:
@@ -160,6 +165,12 @@ class Connect4Simulation():
 			raise AssertionError("Invalid Player/action")
 		return newState
 
+	def displayBoard(self):
+		if self.dimension == 2:
+			self.display2DBoard()
+		elif self.dimension == 3:
+			self.display3DBoard()
+
 	# Temporary function for checking if our algorithm works in 2D connect four.
 	def display2DBoard(self):
 		# grid = np.zeros((self.rownum, self.height))
@@ -277,9 +288,46 @@ class Connect4Simulation():
 	#indexed starting at 0
 	def getPlayer(self,index):
 		return self.players[index]
+
 '''
 OUTSIDE THE CLASS
 '''
+
+def simulate(game, players):
+	while not game.isOver:
+		for player_index in range(1,3):
+			if not game.getLegalActions():
+				print "DRAW"
+				game.displayBoard()
+				return
+			player_id = game.getPlayerID(player_index)
+			curr_player = players[player_index]
+			action = None
+			action = curr_player.getAction(game)
+			print ("Action: ", action)
+			game.addBlock(player_id, action)
+			if game.display:
+				game.displayBoard()
+			winner = game.returnWinner()
+			if winner is not None:
+				print "Player %s won!" % winner
+				game.isOver = True
+				game.displayBoard()
+				return
+
+game = Connect4Simulation(['O', 'X'], dimension=3, display=True)
+human1 = Human(index = 0)
+human2 = Human(index = 1)
+random1 = RandomAgent(index = 0)
+random2 = RandomAgent(index = 1)
+alpha1 = AlphaBetaAgent(depth = 1, \
+						max_dir = 0, \
+						evalFn = agents.betterEvaluationFunction)
+alpha2 = AlphaBetaAgent(depth = 1, \
+						max_dir = 1, \
+						evalFn = agents.betterEvaluationFunction)
+players = ['None', human1, alpha2]
+simulate(game, players)
 
 def simulateRandom(dimension):
 	game, turns = None, 0
@@ -309,7 +357,7 @@ def simulateRandom(dimension):
 				break
 
 
-def simulateHumanVsHuman(dimension):
+def simulateHumanVsHuman(dimension, graphics = False):
 	game, turns = None, 0
 	if(dimension == 2):
 		game = Connect4Simulation(['O', 'X'], y = 1)
@@ -318,8 +366,8 @@ def simulateHumanVsHuman(dimension):
 		game = Connect4Simulation(['O', 'X'])
 		turns = 90
 	gameIsOver = False
-	player_human1 = human.Human(game.rownum, game.colnum)
-	player_human2 = human.Human(game.rownum, game.colnum)
+	player_human1 = human.Human(game.rownum, game.colnum, 0)
+	player_human2 = human.Human(game.rownum, game.colnum, 1)
 	players = ['None', player_human1, player_human2]
 	for i in range(turns):
 		if gameIsOver:
@@ -331,11 +379,11 @@ def simulateHumanVsHuman(dimension):
 			if(dimension == 2):
 				action = (human_player.get2DAction(game.players[player_index -1]), 0)
 				game.addBlock(player_id, action)
-				game.display2DBoard()
+				if graphics: game.display2DBoard()
 			elif(dimension == 3):
 				action = human_player.get3DAction(game.players[player_index -1])
 				game.addBlock(player_id, action)
-				game.display3DBoard()
+				if graphics: game.display3DBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
@@ -419,7 +467,7 @@ def simulateMinimaxAgents(dimension):
 
 # simulateRandom(3)
 # simulateHumanVsHuman(3)
-simulateMinimaxVsHuman(3)
+# simulateMinimaxVsHuman(3)
 # simulateMinimaxAgents(2)
 
 # simulateRandom(2)
