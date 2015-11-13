@@ -300,17 +300,21 @@ OUTSIDE THE CLASS
 '''
 
 def simulate(game, agent_list):
+	allMoves = []
+	numMoves = 0
 	while not game.isOver:
 		for agent in agent_list:
 			if not game.getLegalActions():
 				print "DRAW"
 				game.displayBoard()
-				return
+				return allMoves
 			action = None
 			action = agent.getAction(game)
+			numMoves += 1
 			print ("Action: ", action)
 			game.addBlock(agent.id, action)
 			print "Eval", agents.betterEvaluationFunction(game)
+			allMoves.append((agent.id, action, agents.betterEvaluationFunction(game), numMoves))
 			if game.display:
 				game.displayBoard()
 			winner = game.returnWinner()
@@ -318,13 +322,14 @@ def simulate(game, agent_list):
 				print "Player %s won!" % winner
 				game.isOver = True
 				game.displayBoard()
-				return
+				return allMoves
+
 
 if __name__ == "__main__":
 	player1 = "O"
 	player2 = "X"
 	players = [player1,player2]
-	game = Connect4Simulation(players, dimension=3, x=5, y=5, display=True)
+	game = Connect4Simulation(players, dimension=3, x=4, y=4, z = 4, display=True)
 
 	human1 = Human(player1)
 	human2 = Human(player2)
@@ -340,7 +345,10 @@ if __name__ == "__main__":
 	alpha2 = AlphaBetaAgent(player2, player1, depth = 1, \
 							maximize = -1, \
 							evalFn = agents.betterEvaluationFunction)
-	agent_list = [human1, alpha2]
-	simulate(game, agent_list)
+	agent_list = [random1, random2]
+	#agent_list = [human1, alpha2]
+	allMoves = simulate(game, agent_list)
+	print("Number of Total Moves: " + str(len(allMoves)))
+	print("Final Evaluation: " + str(abs(allMoves[-1][3])))
 
 
