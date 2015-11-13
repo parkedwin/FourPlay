@@ -1,8 +1,8 @@
 import random
 
 class RandomAgent:
-	def __init__(self, index):
-		self.index = index
+	def __init__(self, name):
+		self.id = name
 	
 	def getAction(self, game):
 		if game.getLegalActions():

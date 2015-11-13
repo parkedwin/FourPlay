@@ -2,8 +2,8 @@
 import random
 
 class Agent:
-  def __init__(self, index=0):
-    self.index = index
+  def __init__(name, index=0):
+    self.id = name
 
   def getAction(self, state):
     raiseNotDefined()
@@ -13,10 +13,10 @@ class ReflexAgent(Agent):
     A reflex agent chooses an action at each choice point by examining
     its alternatives via a state evaluation function.
   """
-  def __init__(self, maximize = True):
-    self.lastPositions = []
+  def __init__(self, name ,maximize = True):
     self.dc = None
     self.max = maximize
+    self.id = name
 
 
   def getAction(self, gameState):
@@ -38,98 +38,49 @@ class ReflexAgent(Agent):
     successorGameState = gameState.generateSuccessor(agentIndex, action)
     return successorGameState.getScore()
 
-
 def scoreEvaluationFunction(currentGameState):
   return currentGameState.getScore()
 
-class AgentSearchAgent(Agent):
-
-  def __init__(self, evalFn = scoreEvaluationFunction, depth = '2', max_dir=0):
-    self.evaluationFunction = evalFn
-    self.depth = int(depth)
-    self.index = max_dir 
-    #max_dir = 0 means try to maximize score, max_dir otherwise means agent
-    #wants to minimize score
-
-######################################################################################
-# Problem 1b: implementing minimax
-
-class MinimaxAgent(AgentSearchAgent):
-  def getAction(self, gameState):
-    def recurse(gameState, current_d, agentIndex):
-        LegalActions = gameState.getLegalActions()
-        if agentIndex == 0:
-          LegalActions = [x for x in LegalActions if x != Directions.STOP]
-        if(gameState.returnWinner() is not None or len(LegalActions) == 0):
-          return ['',gameState.getScore()]
-        if(current_d == 0 and agentIndex == self.index):
-          return ['',self.evaluationFunction(gameState)]
-        newIndex = agentIndex + 1
-        newDepth = current_d
-        if newIndex == gameState.getNumAgents():
-          newIndex = 0
-          newDepth = current_d - 1
-        if agentIndex == 0: #this agent wants to maximize
-          player = gameState.getPlayer(agentIndex)
-          bestactions = []
-          bestscore = float("-inf")
-          for action in LegalActions:
-            newState = gameState.generateSuccessor(player, action)
-            result = recurse(newState,newDepth,newIndex)
-            if result[1] > bestscore:
-              bestscore = result[1]
-              bestactions = [action]
-            if result[1] == bestscore:
-              bestactions.append(action)
-        else: #this agent wants to minimize
-          player = gameState.getPlayer(agentIndex)
-          bestactions = []
-          bestscore = float("inf")
-          for action in LegalActions:
-            newState = gameState.generateSuccessor(player, action)
-            result = recurse(newState,newDepth,newIndex)
-            if result[1] < bestscore:
-              bestscore = result[1]
-              bestactions = [action]
-            if result[1] == bestscore:
-              bestactions.append(action)
-        return [random.choice(bestactions), bestscore]
-
-    result = recurse(gameState, self.depth, self.index)
-    return result[0]
-    # BEGIN_YOUR_CODE (around 30 lines of code expected)
-    # END_YOUR_CODE
-
-######################################################################################
-# Problem 2a: implementing alpha-beta
-
-class AlphaBetaAgent(AgentSearchAgent):
+class AlphaBetaAgent(Agent):
   """
     Your minimax agent with alpha-beta pruning (problem 2)
   """
-
+  def __init__(self, name, opp_name, maximize = 1, depth = 1, evalFn = scoreEvaluationFunction):
+    self.dc = None
+    self.max = maximize
+    self.id = name
+    self.opponent = opp_name
+    self.evaluationFunction = evalFn
+    self.depth = depth
+    
   def getAction(self, gameState):
     """
       Returns the minimax action using self.depth and self.evaluationFunction
     """
-    def recurse(gameState, current_d, agentIndex, threshold):
+    def getCurrentPlayer(turn):
+      if(turn * self.max > 0):
+        return self.id
+      return self.opponent 
+
+    def recurse(gameState, current_d, turn, threshold):
         LegalActions = gameState.getLegalActions()
         if(gameState.returnWinner() is not None or len(LegalActions) == 0):
           return ['',gameState.getScore()]
-        if(current_d == 0 and agentIndex == self.index):
+        if(current_d == 0):
           return ['',self.evaluationFunction(gameState)]
-        newIndex = agentIndex + 1
+        new_turn = -1*turn
         newDepth = current_d
-        if newIndex == gameState.getNumAgents():
-          newIndex = 0
+        if new_turn == self.max:
           newDepth = current_d - 1
-        if agentIndex == 0:
-          bestactions = []
+
+        bestactions = []
+        player = getCurrentPlayer(turn)
+        #likes to maximize
+        if turn > 0:
           bestscore = float("-inf")
-          player = gameState.getPlayer(agentIndex)
           for action in LegalActions:
             newState = gameState.generateSuccessor(player, action)
-            result = recurse(newState,newDepth,newIndex,bestscore)
+            result = recurse(newState,newDepth,new_turn,bestscore)
             if result[1] == bestscore:
               bestactions.append(action)
             if result[1] > bestscore:
@@ -137,16 +88,11 @@ class AlphaBetaAgent(AgentSearchAgent):
               bestactions = [action]
             if result[1] > threshold:
               return[random.choice(bestactions), bestscore]
-        else:
-          bestactions = []
+        else: #minimizer
           bestscore = float("inf")
-          player = gameState.getPlayer(agentIndex)
           for action in LegalActions:
             newState = gameState.generateSuccessor(player, action)
-            if newIndex == 0:
-              result = recurse(newState,newDepth,newIndex,bestscore)
-            else:
-              result = recurse(newState,newDepth,newIndex,threshold)
+            result = recurse(newState,newDepth,new_turn,bestscore)
             if result[1] == bestscore:
               bestactions.append(action)
             if result[1] < bestscore:
@@ -156,86 +102,41 @@ class AlphaBetaAgent(AgentSearchAgent):
               return [random.choice(bestactions),bestscore]
         return [random.choice(bestactions), bestscore]
 
-    if(self.index == 0):
+    if(self.max > 0 and self.id != gameState.players[1]):
+      raise AssertionError("Alpha Beta instance set up backwards")
+    if(self.max < 0 and self.id != gameState.players[2]):
+      raise AssertionError("Alpha Beta instance set up backwards")
+
+    if(self.max > 0):
       threshold = float("inf")
     else:
       threshold = float("-inf") 
-    result = recurse(gameState, self.depth, self.index, float("inf"))
+    result = recurse(gameState, self.depth, self.max, float("inf"))
     return result[0]
 
-######################################################################################
-# Problem 3b: implementing expectimax
-
-class ExpectimaxAgent(AgentSearchAgent):
-  """
-    Your expectimax agent (problem 3)
-  """
-
-  def getAction(self, gameState):
-    # BEGIN_YOUR_CODE (around 25 lines of code expected)
-    def recurse(gameState, current_d, agentIndex):
-        LegalActions = gameState.getLegalActions()
-        if(gameState.returnWinner() is not None or len(LegalActions) == 0):
-          return ['',gameState.getScore()]
-        if(current_d == 0 and agentIndex == self.index):
-          return ['',self.evaluationFunction(gameState)]
-        newIndex = agentIndex + 1
-        newDepth = current_d
-        if newIndex == gameState.getNumAgents():
-          newIndex = 0
-          newDepth = current_d - 1
-        if agentIndex == self.index:
-          bestactions = []
-          if(agentIndex == 0):
-            bestscore = float("-inf")
-            player = gameState.getPlayer(agentIndex)
-            for action in LegalActions:
-              newState = gameState.generateSuccessor(player, action)
-              result = recurse(newState,newDepth,newIndex)
-              if result[1] == bestscore:
-                bestactions.append(action)
-              elif result[1] > bestscore:
-                bestscore = result[1]
-                bestactions = [action]
-            return [random.choice(bestactions), bestscore]
-          if(agentIndex == 1):
-            bestscore = float("inf")
-            player = gameState.getPlayer(agentIndex)
-            for action in LegalActions:
-              newState = gameState.generateSuccessor(player, action)
-              result = recurse(newState,newDepth,newIndex)
-              if result[1] == bestscore:
-                bestactions.append(action)
-              elif result[1] < bestscore:
-                bestscore = result[1]
-                bestactions = [action]
-            return [random.choice(bestactions), bestscore]
-
-        else:
-          score_list = list()
-          player = gameState.getPlayer(agentIndex)
-          for action in LegalActions:
-            newState = gameState.generateSuccessor(player, action)
-            result = recurse(newState,newDepth,newIndex)
-            score_list.append(result[1])
-          bestscore = sum(score_list)/len(score_list)
-          return ['', bestscore]
-
-    result = recurse(gameState, self.depth, self.index)
-    return result[0]
 
 def betterEvaluationFunction(currentGameState):
   score = currentGameState.getScore()
-  patterns = [[1,1,0,0],[1,1,1,0],[1,1,1,1],[2,2,0,0],[2,2,2,0],[2,2,2,2]]
-  count = currentGameState.getAllCounts(patterns,4)
-  #remember player 1 maximizes, player 2 minimizes
-  score += 2*count[0]
-  score += 5*count[1]
-  score += 10*count[2]
+  pattern_score = []
 
-  score -= 2*count[3]
-  score -= 5*count[4]
-  score -= 10*count[5]
+  pattern_score.append(([1,1,0,0], 2))
+  pattern_score.append(([1,1,1,0], 5))
+  pattern_score.append(([2,2,0,0], -2))
+  pattern_score.append(([2,2,2,0], -5))
+  patterns = [thing[0] for thing in pattern_score]
+  counts = currentGameState.getAllCounts(patterns,4,0)
+
+  for index,count in enumerate(counts):
+    score += count*pattern_score[index][1]
+
+  offset_patterns_score = []
+  offset_patterns_score.append(([0,1,1,0], 2))
+  offset_patterns_score.append(([0,2,2,0], -2))
+  off_patterns = [thing[0] for thing in offset_patterns_score]
+  off_counts = currentGameState.getAllCounts(off_patterns,4,1)
+  for index,count in enumerate(off_counts):
+    score += count*int(offset_patterns_score[index][1]) / 2 
+
   return score
 better = betterEvaluationFunction
 

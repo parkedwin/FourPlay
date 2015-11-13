@@ -8,6 +8,7 @@ import agents
 from human import Human
 from random_agent import RandomAgent
 from agents import AlphaBetaAgent
+from agents import ReflexAgent
 import copy
 from matplotlib.widgets import Button
 
@@ -18,7 +19,9 @@ class Connect4Simulation():
 		self.dimension = dimension
 		if self.dimension == 2: y = 1
 		self.board = [[[] for j in range(y)] for i in range(x)]
-		self.players = players
+		self.players = ['None']
+		self.players.extend(players)
+
 		self.height = z
 		self.rownum = x
 		self.colnum = y
@@ -28,12 +31,12 @@ class Connect4Simulation():
 
 	def getPlayerIndex(self,player):
 		if player in self.players:
-			return self.players.index(player) + 1
+			return self.players.index(player)
 		raise AssertionError("Invalid player")
-	#indexed starting at 1
+
 	def getPlayerID(self,index):
 		if index <= len(self.players) and index > 0:
-			return self.players[index - 1]
+			return self.players[index]
 		raise AssertionError("invalid index")
 
 	def addBlock(self, player, action):
@@ -61,14 +64,6 @@ class Connect4Simulation():
 		  	return 0
 		return -1
 
-	def getBlock_PlayerID(self, i,j, k):
-		if j < self.colnum and i < self.rownum and j >= 0 and i >= 0:
-		  if k < len(self.board[i][j]) and k >= 0:
-			return self.getPlayerID(self.board[i][j][k])
-		  if k >= 0 and k < self.height:
-		    return "open"
-		return "Not Valid position"
-
 	def checkRowWin(self,allRows):
 		for row in allRows:
 			if row.count(row[0]) == len(row) and row[0] > 0:
@@ -81,7 +76,7 @@ class Connect4Simulation():
 				pattern_index = patterns.index(row)
 				counts[pattern_index] += 1
 
-	def getAllCounts(self, patterns, patternsize):
+	def getAllCounts(self, patterns, patternsize, offset):
 		counts = [0] * len(patterns)
 		for k in range(self.height):
 			for i in range(self.rownum):
@@ -90,25 +85,42 @@ class Connect4Simulation():
 					if player > 0:
 						allRows = []
 						#go down column to check for win
-						allRows.append([self.getBlock(i+num,j,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j,k) for num in range(0, patternsize)])
 						#go down row to check for win
-						allRows.append([self.getBlock(i,j+num,k) for num in  range(0, patternsize)])
+						allRows.append([self.getBlock(i,j+num-offset,k) for num in  range(0, patternsize)])
+						allRows.append([self.getBlock(i,j-num+offset,k) for num in  range(0, patternsize)])
 						#go down z_col to check for win
-						allRows.append([self.getBlock(i,j,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j,k-num+offset) for num in range(0, patternsize)])
 						#go down diagonals
-						allRows.append([self.getBlock(i+num,j+num,k) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i+num,j,k+num) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i,j+num,k+num) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i+num,j+num,k+num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j+num-offset,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j+num-offset,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j+num-offset,k+num-offset) for num in range(0, patternsize)])
+
+						allRows.append([self.getBlock(i-num+offset,j-num+offset,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j,k-num+offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j-num+offset,k-num+offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j-num+offset,k-num+offset) for num in range(0, patternsize)])
 
 						#other diagonals T_T
-						allRows.append([self.getBlock(i+num,j-num,k) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i+num,j,k-num) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i,j+num,k-num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j-num+offset,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j,k-num+offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j+num-offset,k-num+offset) for num in range(0, patternsize)])
 
-						allRows.append([self.getBlock(i-num,j+num,k+num) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i+num,j-num,k+num) for num in range(0, patternsize)])
-						allRows.append([self.getBlock(i+num,j+num,k-num) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j+num-offset,k) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i,j-num+offset,k+num-offset) for num in range(0, patternsize)])
+
+						allRows.append([self.getBlock(i-num+offset,j+num-offset,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j-num+offset,k+num-offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i+num-offset,j+num-offset,k-num+offset) for num in range(0, patternsize)])
+
+						allRows.append([self.getBlock(i+num-offset,j-num+offset,k-num+offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j+num-offset,k-num+offset) for num in range(0, patternsize)])
+						allRows.append([self.getBlock(i-num+offset,j-num+offset,k+num-offset) for num in range(0, patternsize)])
+
 						self.rowsPatterns(allRows,patterns,counts)
 		return counts
 
@@ -173,10 +185,6 @@ class Connect4Simulation():
 
 	# Temporary function for checking if our algorithm works in 2D connect four.
 	def display2DBoard(self):
-		# grid = np.zeros((self.rownum, self.height))
-		# for i in range(len(self.board)):
-		# 	for k in range(len(self.board[i][0])):
-		# 		grid[i][k] = self.board[i][0][k] + 1 # because 0 is empty, 1 is player 1, 2 is player 2
 		grid = np.zeros((self.rownum, self.height))
 		for i in range(len(self.board)):
 			for k in range(len(self.board[i][0])):
@@ -276,36 +284,27 @@ class Connect4Simulation():
 
 	def getScore(self):
 		result = self.returnWinner()
-		if(result == self.players[0]):
-			return float('inf')
 		if(result == self.players[1]):
+			return float('inf')
+		if(result == self.players[2]):
 			return float('-inf')
 		return 0
-
-	def getNumAgents(self):
-		return len(self.players)
-
-	#indexed starting at 0
-	def getPlayer(self,index):
-		return self.players[index]
 
 '''
 OUTSIDE THE CLASS
 '''
 
-def simulate(game, players):
+def simulate(game, agents):
 	while not game.isOver:
-		for player_index in range(1,3):
+		for agent in agents:
 			if not game.getLegalActions():
 				print "DRAW"
 				game.displayBoard()
 				return
-			player_id = game.getPlayerID(player_index)
-			curr_player = players[player_index]
 			action = None
-			action = curr_player.getAction(game)
+			action = agent.getAction(game)
 			print ("Action: ", action)
-			game.addBlock(player_id, action)
+			game.addBlock(agent.id, action)
 			if game.display:
 				game.displayBoard()
 			winner = game.returnWinner()
@@ -315,166 +314,26 @@ def simulate(game, players):
 				game.displayBoard()
 				return
 
-game = Connect4Simulation(['O', 'X'], dimension=3, display=True)
-human1 = Human(index = 0)
-human2 = Human(index = 1)
-random1 = RandomAgent(index = 0)
-random2 = RandomAgent(index = 1)
-alpha1 = AlphaBetaAgent(depth = 1, \
-						max_dir = 0, \
+player1 = "O"
+player2 = "X"
+players = [player1,player2]
+game = Connect4Simulation(players, dimension=3, display=True)
+
+human1 = Human(player1)
+human2 = Human(player2)
+random1 = RandomAgent(player1)
+random2 = RandomAgent(player2)
+reflex1 = ReflexAgent(player1)
+reflex2 = ReflexAgent(player2)
+
+alpha1 = AlphaBetaAgent(player1,player2, depth = 1, \
+						maximize = 1, \
 						evalFn = agents.betterEvaluationFunction)
-alpha2 = AlphaBetaAgent(depth = 1, \
-						max_dir = 1, \
+
+alpha2 = AlphaBetaAgent(player2, player1, depth = 1, \
+						maximize = -1, \
 						evalFn = agents.betterEvaluationFunction)
-players = ['None', human1, alpha2]
-simulate(game, players)
-
-def simulateRandom(dimension):
-	game, turns = None, 0
-	if(dimension == 2):
-		game = Connect4Simulation(['O', 'X'], y = 1)
-		turns = 20
-	elif(dimension == 3):
-		game = Connect4Simulation(['O', 'X'])
-		turns = 90
-	gameIsOver = False
-	for i in range(turns):
-		if gameIsOver:
-			break
-		for player_index in range(1,3):
-			action = random.choice(game.getLegalActions())
-			player_id = game.getPlayerID(player_index)
-			game.addBlock(player_id, action)
-			print action
-			if(dimension == 2):
-				game.display2DBoard()
-			elif(dimension == 3):
-				game.display3DBoard()
-			winner = game.returnWinner()
-			if winner is not None:
-				print "Player %s won!" % winner
-				gameIsOver = True
-				break
-
-
-def simulateHumanVsHuman(dimension, graphics = False):
-	game, turns = None, 0
-	if(dimension == 2):
-		game = Connect4Simulation(['O', 'X'], y = 1)
-		turns = 20
-	elif(dimension == 3):
-		game = Connect4Simulation(['O', 'X'])
-		turns = 90
-	gameIsOver = False
-	player_human1 = human.Human(game.rownum, game.colnum, 0)
-	player_human2 = human.Human(game.rownum, game.colnum, 1)
-	players = ['None', player_human1, player_human2]
-	for i in range(turns):
-		if gameIsOver:
-			break
-		for player_index in range(1,3):
-			player_id = game.getPlayerID(player_index)
-			human_player = players[player_index]
-			action = None
-			if(dimension == 2):
-				action = (human_player.get2DAction(game.players[player_index -1]), 0)
-				game.addBlock(player_id, action)
-				if graphics: game.display2DBoard()
-			elif(dimension == 3):
-				action = human_player.get3DAction(game.players[player_index -1])
-				game.addBlock(player_id, action)
-				if graphics: game.display3DBoard()
-			winner = game.returnWinner()
-			if winner is not None:
-				print "Player %s won!" % winner
-				gameIsOver = True
-				break 
-
-
-def simulateMinimaxVsHuman(dimension):
-	game, turns = None, 0
-	if(dimension == 2):
-		game = Connect4Simulation(['O', 'X'], y = 1)
-		turns = 20
-	elif(dimension == 3):
-		game = Connect4Simulation(['O', 'X'])
-		turns = 90
-	gameIsOver = False
-	player_human = human.Human(game.rownum, game.colnum)
-	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
-	players = ['None', player_human, player_min]
-	for i in range(turns):
-		if gameIsOver:
-			break
-		for player_index in range(1,3):
-			player_id = game.getPlayerID(player_index)
-			if(player_index == 1):
-				human_player = players[player_index]
-				action = None
-				if(dimension == 2):
-					action = (human_player.get2DAction(game.players[player_index - 1]), 0)
-				elif(dimension == 3):
-					action = human_player.get3DAction(game.players[player_index - 1])
-				game.addBlock(player_id, action)
-			elif(player_index == 2):
-				AlphaBetaAgent_player = players[player_index]
-				action = AlphaBetaAgent_player.getAction(game)
-				game.addBlock(player_id, action)
-			print "player ",player_id, "places at", action
-			print "Evaluation :",agents.betterEvaluationFunction(game)
-			if(dimension == 2):
-				game.display2DBoard()
-			elif(dimension == 3):
-				game.display3DBoard()
-			winner = game.returnWinner()
-			if winner is not None:
-				print "Player %s won!" % winner
-				gameIsOver = True
-				break
-
-def simulateMinimaxAgents(dimension):
-	game, turns = None, 0
-	if(dimension == 2):
-		game = Connect4Simulation(['O', 'X'], y = 1)
-		turns = 20
-	elif(dimension == 3):
-		game = Connect4Simulation(['O', 'X'])
-		turns = 90
-	gameIsOver = False
-	player_max = agents.AlphaBetaAgent(depth= 2, max_dir = 0, evalFn= agents.betterEvaluationFunction) #player 0 on game
-	player_min = agents.AlphaBetaAgent(depth= 2, max_dir = 1, evalFn= agents.betterEvaluationFunction) #player 1 on game
-	alphabeta_players = ['None', player_max, player_min]
-	for i in range(turns):
-		if gameIsOver:
-			break
-		for player_index in range(1,3):
-			player_id = game.getPlayerID(player_index)
-			AlphaBetaAgent_player = alphabeta_players[player_index]
-			print("here")
-			action = AlphaBetaAgent_player.getAction(game)
-			game.addBlock(player_id, action)
-			print "player ",player_id, "places at", action
-			print "Evaluation :",agents.betterEvaluationFunction(game)
-			if(dimension == 2):
-				game.display2DBoard()
-			elif(dimension == 3):
-				game.display3DBoard()
-			winner = game.returnWinner()
-			if winner is not None:
-				print "Player %s won!" % winner
-				gameIsOver = True
-				break
-
-# simulateRandom(3)
-# simulateHumanVsHuman(3)
-# simulateMinimaxVsHuman(3)
-# simulateMinimaxAgents(2)
-
-# simulateRandom(2)
-# simulateHumanVsHuman(2)
-# simulateMinimaxVsHuman(3)
-# simulateMinimaxAgents(2)
-
-# simulateMinimaxAgents(2)
+agents = [human1, alpha2]
+simulate(game, agents)
 
 
