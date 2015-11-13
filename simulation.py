@@ -324,7 +324,7 @@ if __name__ == "__main__":
 	player1 = "O"
 	player2 = "X"
 	players = [player1,player2]
-	game = Connect4Simulation(players, dimension=3, display=True)
+	game = Connect4Simulation(players, dimension=3, x=5, y=5, display=True)
 
 	human1 = Human(player1)
 	human2 = Human(player2)

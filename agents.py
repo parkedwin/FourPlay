@@ -111,7 +111,7 @@ class AlphaBetaAgent(Agent):
       threshold = float("inf")
     else:
       threshold = float("-inf") 
-    result = recurse(gameState, self.depth, self.max, float("inf"))
+    result = recurse(gameState, self.depth, self.max, threshold)
     return result[0]
 
 
