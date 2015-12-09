@@ -345,11 +345,10 @@ if __name__ == "__main__":
 	alpha2 = AlphaBetaAgent(player2, player1, depth = 1, \
 							maximize = -1, \
 							evalFn = agents.betterEvaluationFunction)
-	agent_list = [random1, random2]
 	#agent_list = [human1, alpha2]
-	agent_list = [reflex1, alpha2]
+	agent_list = [human1, alpha2]
 	allMoves = simulate(game, agent_list)
 	print("Number of Total Moves: " + str(len(allMoves)))
-	print("Final Evaluation: " + str(abs(allMoves[-1][3])))
+	print("Final Evaluation: " + str(allMoves[-1][2]))
 
 
