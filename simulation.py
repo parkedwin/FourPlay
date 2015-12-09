@@ -14,7 +14,7 @@ import copy
 from matplotlib.widgets import Button
 
 
-class Connect4Game():
+class ConnectFour():
 
 	def __init__(self, players, dimension = 3, x = 4, y = 4, z = 4, conn_num = 4, display = True):
 		self.dimension = dimension
@@ -299,37 +299,36 @@ class Connect4Game():
 OUTSIDE THE CLASS
 '''
 
-def simulate(game, agent_list):
-	allMoves = []
+def simulate(game, agent_list, simulation=False):
+	moves = []
 	numMoves = 0
 	while not game.isOver:
 		for agent in agent_list:
 			if not game.getLegalActions():
 				print "DRAW"
 				game.displayBoard()
-				return allMoves
+				return (moves, "Draw")
 			action = None
 			action = agent.getAction(game)
 			numMoves += 1
-			print ("Action: ", action)
+			# print ("Action: ", action)
 			game.addBlock(agent.id, action)
-			print "Eval", agents.betterEvaluationFunction(game)
-			allMoves.append((agent.id, action, agents.betterEvaluationFunction(game), numMoves))
+			# print "Eval", agents.betterEvaluationFunction(game)
+			moves.append((agent.id, action, agents.betterEvaluationFunction(game), numMoves))
 			if game.display:
 				game.displayBoard()
 			winner = game.returnWinner()
 			if winner is not None:
 				print "Player %s won!" % winner
 				game.isOver = True
-				game.displayBoard()
-				return allMoves
+				if not simulation: game.displayBoard()
+				return (moves, winner)
 
 
 if __name__ == "__main__":
 	player1 = "O"
 	player2 = "X"
 	players = [player1,player2]
-	game = Connect4Game(players, dimension=3, x=4, y=4, z = 4, display=False)
 
 	human1 = Human(player1)
 	human2 = Human(player2)
@@ -350,5 +349,21 @@ if __name__ == "__main__":
 	allMoves = simulate(game, agent_list)
 	print("Number of Total Moves: " + str(len(allMoves)))
 	print("Final Evaluation: " + str(allMoves[-1][2]))
+	agent_list = [reflex1, alpha2]
+	# winner, allMoves = simulate(game, agent_list)
+	# print("Number of Total Moves: " + str(len(allMoves)))
+	# print("Final Evaluation: " + str(abs(allMoves[-1][3])))
+
+	numSimulations = 15
+	winners = []
+	for i in range(numSimulations):
+		print "iteration %d" % i
+		game = ConnectFour(players, dimension=3, x=4, y=4, z = 4, display=False)
+		# simulate(game, agent_list, simulation=True)
+		allMoves, winner = simulate(game, agent_list, simulation=True)
+		print("Number of Total Moves: " + str(len(allMoves)))
+		print("Final Evaluation: " + str(allMoves[-1][2]))
+		winners.append(winner)
+	print winners
 
 
