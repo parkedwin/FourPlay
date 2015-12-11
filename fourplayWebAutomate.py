@@ -10,6 +10,7 @@
 
 
 from PIL import ImageGrab
+import random
 import os
 import sys
 import time
@@ -35,6 +36,13 @@ from matplotlib.widgets import Button
 
 gameFolder = sys.argv[1]
 gameMode = sys.argv[2]
+if len(sys.argv) > 3:
+	explore = True
+else:
+	explore = False
+exploreProb = 0.2
+depth = 1
+
 
 xgap = 6
 ygap = 124
@@ -68,7 +76,7 @@ def main():
 	our_player = "X"
 	players = [web_player,our_player]
 
-	alpha_player = AlphaBetaAgent(our_player, web_player, depth = 1, \
+	alpha_player = AlphaBetaAgent(our_player, web_player, depth = depth, \
 							maximize = -1, \
 							evalFn = agents.betterEvaluationFunction)
 
@@ -121,7 +129,15 @@ def main():
 			win = True
 			break
 
-		(mymove_x, mymove_y) = alpha_player.getAction(game)
+		if(explore):
+			rand_num = random.random()
+			if(rand_num > exploreProb):
+				(mymove_x, mymove_y) = alpha_player.getAction(game)
+			else:
+				actions = game.getLegalActions()
+				(mymove_x, mymove_y) = random.choice(actions)
+		else:
+			(mymove_x, mymove_y) = alpha_player.getAction(game)
 		game.addBlock(our_player, (mymove_x,mymove_y))
 
 		prevHeights[mymove_y][mymove_x] += 1
@@ -149,7 +165,7 @@ def main():
 	gameTime = toc - tic 
 	print("GAME OVER. PLAY TIME = " + str(gameTime))
 	print("GAME TRANSCRIPT:")
-	f = open('game_transcripts/' + gameFolder + ".txt", 'w')
+	f = open('TD_depth1_game_transcripts/' + gameFolder + ".txt", 'w')
 	f.write("GAME TRANSCRIPT LEVEL " + gameMode + " FOR: " + gameFolder + "\n")
 	f.write("WINNER: " + result + "\n")
 	f.write("PLAY TIME = " + str(gameTime) + "\n")

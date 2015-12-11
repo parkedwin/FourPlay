@@ -127,11 +127,12 @@ class AlphaBetaAgent(Agent):
 def betterEvaluationFunction(currentGameState):
   score = currentGameState.getScore()
   pattern_score = []
-
-  pattern_score.append(([1,1,0,0], 2))
-  pattern_score.append(([1,1,1,0], 5))
-  pattern_score.append(([2,2,0,0], -2))
-  pattern_score.append(([2,2,2,0], -5))
+  weight2 = 4554.46
+  weight3 = 6986.67
+  pattern_score.append(([1,1,0,0], weight2))
+  pattern_score.append(([1,1,1,0], weight3))
+  pattern_score.append(([2,2,0,0], -weight2))
+  pattern_score.append(([2,2,2,0], -weight3))
   patterns = [thing[0] for thing in pattern_score]
   counts = currentGameState.getAllCounts(patterns,4,0)
 
@@ -139,8 +140,8 @@ def betterEvaluationFunction(currentGameState):
     score += count*pattern_score[index][1]
 
   offset_patterns_score = []
-  offset_patterns_score.append(([0,1,1,0], 2))
-  offset_patterns_score.append(([0,2,2,0], -2))
+  offset_patterns_score.append(([0,1,1,0], weight2))
+  offset_patterns_score.append(([0,2,2,0], -weight2))
   off_patterns = [thing[0] for thing in offset_patterns_score]
   off_counts = currentGameState.getAllCounts(off_patterns,4,1)
   for index,count in enumerate(off_counts):
