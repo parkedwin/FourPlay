@@ -1,0 +1,10 @@
+GAME TRANSCRIPT LEVEL HARD FOR: game47
+WINNER: Web
+PLAY TIME = 0.916893
+oracle, 0, 0
+fourplay AI, 1, 0
+oracle, 1, 1
+fourplay AI, 1, 2
+oracle, 2, 2
+fourplay AI, 3, 2
+oracle, 3, 3

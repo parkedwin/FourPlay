@@ -1,0 +1,10 @@
+GAME TRANSCRIPT LEVEL HARD FOR: game15
+WINNER: Web
+PLAY TIME = 0.803343
+oracle, 0, 0
+fourplay AI, 1, 2
+oracle, 1, 1
+fourplay AI, 2, 1
+oracle, 2, 2
+fourplay AI, 2, 2
+oracle, 3, 3

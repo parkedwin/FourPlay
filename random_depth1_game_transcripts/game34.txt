@@ -1,0 +1,10 @@
+GAME TRANSCRIPT LEVEL HARD FOR: game34
+WINNER: Web
+PLAY TIME = 0.787817
+oracle, 0, 0
+fourplay AI, 0, 1
+oracle, 1, 1
+fourplay AI, 0, 0
+oracle, 2, 2
+fourplay AI, 0, 1
+oracle, 3, 3
