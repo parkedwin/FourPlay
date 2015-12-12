@@ -42,7 +42,7 @@ if len(sys.argv) > 4:
 else:
 	explore = False
 exploreProb = 0.2
-depth = 2
+depth = 1
 
 
 xgap = 6
