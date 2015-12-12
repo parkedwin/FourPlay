@@ -105,21 +105,23 @@ different settings.
 1.) Load fourplay.html on google chrome web browser
 2.) Drag left side of the browser window all the way left to have it flush against left 
 	boundary of screen
-3.) Have terminal and all other applications to the right of the web browser. Must not have
+3.) Drag the board angle to 0, and have setting with Red as Human (our AI) and blue as 
+	computer (the oracle).
+4.) Have terminal and all other applications to the right of the web browser. Must not have
 	any thing overlapping the game board at any point. 
-4.) Default settings for xgap and ygap in the fourplayWebAutomation.py are set to fit the 
+5.) Default settings for xgap and ygap in the fourplayWebAutomation.py are set to fit the 
 	screen size to find the top left corner of the gameboard. Adjust these parameters if 
 	running software on computers of different screen dimensions. 
-5.) >> python batchGameScriptGenerator.py <begin_index> <end_index> 
+6.) >> python batchGameScriptGenerator.py <begin_index> <end_index> 
 	This command generates the batchGameScript.sh file that contains commands to make 
 	directory to store the game's frame by frame moves as .png, run the entire game, and 
 	write to .txt file the game transcript which contains each move of the session. Delete 
 	the frame by frame images after transcript is created to save memory. 
 
-6.) >> bash batchGameScript.sh
+7.) >> bash batchGameScript.sh
 	This commands begins execution of game session beg_index, to end_index
-7.) Watch the many sessions of games run automatically
-8.) Retrieve game transcripts stored in game_transcript directory to perform further analysis. 
+8.) Watch the many sessions of games run automatically
+9.) Retrieve game transcripts stored in game_transcript directory to perform further analysis. 
 
 
 ####################################  fourplayWebAutomate.py  ####################################
