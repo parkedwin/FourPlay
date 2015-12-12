@@ -341,11 +341,11 @@ if __name__ == "__main__":
 	reflex1 = ReflexAgent(player1, player2)
 	reflex2 = ReflexAgent(player2, player1, maximize = False)
 
-	alpha1 = AlphaBetaAgent(player1,player2, alpha_depth = 1, \
+	alpha1 = AlphaBetaAgent(player1,player2, depth = alpha_depth, \
 							maximize = 1, \
 							evalFn = agents.betterEvaluationFunction)
 
-	alpha2 = AlphaBetaAgent(player2, player1, alpha_depth = 1, \
+	alpha2 = AlphaBetaAgent(player2, player1, depth = alpha_depth, \
 							maximize = -1, \
 							evalFn = agents.betterEvaluationFunction)
 
@@ -372,9 +372,9 @@ if __name__ == "__main__":
 		print "Agents undefined in command line"
 		exit(0)
 
-	allMoves = simulate(game, agent_list)
-	print("Number of Total Moves: " + str(len(allMoves)))
-	print("Final Evaluation: " + str(allMoves[-1][2]))
+	#allMoves = simulate(game, agent_list)
+	#print("Number of Total Moves: " + str(len(allMoves)))
+	#print("Final Evaluation: " + str(allMoves[-1][2]))
 	agent_list = [reflex1, alpha2]
 	# winner, allMoves = simulate(game, agent_list)
 	# print("Number of Total Moves: " + str(len(allMoves)))
