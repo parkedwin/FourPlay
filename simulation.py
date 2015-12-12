@@ -339,7 +339,7 @@ if __name__ == "__main__":
 	random1 = RandomAgent(player1)
 	random2 = RandomAgent(player2)
 	reflex1 = ReflexAgent(player1, player2)
-	reflex2 = ReflexAgent(player2, player1)
+	reflex2 = ReflexAgent(player2, player1, maximize = False)
 
 	alpha1 = AlphaBetaAgent(player1,player2, alpha_depth = 1, \
 							maximize = 1, \

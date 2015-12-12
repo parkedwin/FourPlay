@@ -36,12 +36,13 @@ from matplotlib.widgets import Button
 
 gameFolder = sys.argv[1]
 gameMode = sys.argv[2]
-if len(sys.argv) > 3:
+player_name = sys.argv[3]
+if len(sys.argv) > 4:
 	explore = True
 else:
 	explore = False
 exploreProb = 0.2
-depth = 1
+depth = 2
 
 
 xgap = 6
@@ -79,6 +80,17 @@ def main():
 	alpha_player = AlphaBetaAgent(our_player, web_player, depth = depth, \
 							maximize = -1, \
 							evalFn = agents.betterEvaluationFunction)
+
+	reflex_player = ReflexAgent(our_player,web_player,maximize=False)
+
+	random_player = RandomAgent(our_player)
+
+	if(player_name == "random"):
+		play_inst = random_player
+	elif(player_name == "reflex"):
+		play_inst = reflex_player
+	elif(player_name == "alpha"):
+		play_inst = alpha_player
 
 	game = ConnectFour(players, dimension=3, x=4, y=4, z = 4, display=False)
 	tic = time.clock()
@@ -132,12 +144,12 @@ def main():
 		if(explore):
 			rand_num = random.random()
 			if(rand_num > exploreProb):
-				(mymove_x, mymove_y) = alpha_player.getAction(game)
+				(mymove_x, mymove_y) = play_inst.getAction(game)
 			else:
 				actions = game.getLegalActions()
 				(mymove_x, mymove_y) = random.choice(actions)
 		else:
-			(mymove_x, mymove_y) = alpha_player.getAction(game)
+			(mymove_x, mymove_y) = play_inst.getAction(game)
 		game.addBlock(our_player, (mymove_x,mymove_y))
 
 		prevHeights[mymove_y][mymove_x] += 1
@@ -165,7 +177,7 @@ def main():
 	gameTime = toc - tic 
 	print("GAME OVER. PLAY TIME = " + str(gameTime))
 	print("GAME TRANSCRIPT:")
-	f = open('TD_depth1_game_transcripts/' + gameFolder + ".txt", 'w')
+	f = open('TD_depth2_game_transcripts/' + gameFolder + ".txt", 'w')
 	f.write("GAME TRANSCRIPT LEVEL " + gameMode + " FOR: " + gameFolder + "\n")
 	f.write("WINNER: " + result + "\n")
 	f.write("PLAY TIME = " + str(gameTime) + "\n")
